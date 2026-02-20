@@ -1,9 +1,11 @@
+require("dotenv").config();
 const express = require("express");
 const http = require("http");
 const { Server } = require("socket.io");
 const path = require("path");
 
 const app = express();
+app.use(express.json());
 const server = http.createServer(app);
 
 const PORT = process.env.PORT || 4000;
@@ -84,7 +86,8 @@ function generateIdentity() {
   return `${adj} ${ani}`;
 }
 
-app.post("/api/get-confess", (req, res) => {});
+// TODO: implement or remove this route
+// app.post("/api/get-confess", (req, res) => {});
 
 // API: Generate unique Board ID
 app.get("/api/generate-id", (req, res) => {
