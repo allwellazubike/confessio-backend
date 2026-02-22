@@ -1,15 +1,20 @@
 const { Pool } = require("pg");
 require("dotenv").config();
 
-// database configuration here
-const db = new Pool({
-  user: process.env.PG_USER,
-  host: process.env.PG_HOST,
-  database: process.env.PG_DATABASE,
-  password: process.env.PG_PASSWORD,
-  port: process.env.PG_PORT,
+const isProduction = process.env.NODE_ENV === "production";
+
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  // Only use SSL if we are NOT running on our local machine
+  ssl: isProduction ? { rejectUnauthorized: false } : false,
 });
 
-module.exports = {
-  query: (text, params) => db.query(text, params),
-};
+pool.connect((err, client, release) => {
+  if (err) {
+    return console.error("❌ Database connection error:", err.stack);
+  }
+  console.log("✅ Connected to database successfully!");
+  release();
+});
+
+module.exports = pool;

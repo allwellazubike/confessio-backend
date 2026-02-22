@@ -2,7 +2,6 @@ require("dotenv").config();
 const express = require("express");
 const http = require("http");
 const { Server } = require("socket.io");
-const path = require("path");
 
 const app = express();
 app.use(express.json());
@@ -25,6 +24,26 @@ const io = new Server(server, {
 const ADMIN_PASSWORD = "admin123";
 
 const db = require("./db");
+
+// Auto-create table on startup
+async function initDB() {
+  try {
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS confessions (
+        id         SERIAL PRIMARY KEY,
+        board_id   VARCHAR(20)  NOT NULL,
+        text       TEXT         NOT NULL,
+        gradient   VARCHAR(100),
+        identity   VARCHAR(100),
+        created_at TIMESTAMP    DEFAULT NOW()
+      )
+    `);
+    console.log("✅ Database table ready");
+  } catch (err) {
+    console.error("❌ Failed to initialise DB:", err);
+  }
+}
+initDB();
 
 // Run cleanup every 10 minutes: Delete boards inactive for 24 hours
 setInterval(
@@ -172,13 +191,6 @@ io.on("connection", (socket) => {
     // standard disconnect
   });
 });
-
-if (process.env.NODE_ENV === "production") {
-  app.use(express.static(path.join(__dirname, "client/dist")));
-  app.get("*", (req, res) => {
-    res.sendFile(path.join(__dirname, "client/dist", "index.html"));
-  });
-}
 
 server.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
