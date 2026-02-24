@@ -76,7 +76,6 @@ setInterval(
   10 * 60 * 1000,
 );
 
-// ─── IDENTITY GENERATION ────────────────────────────────────────────────────
 const headerGradients = [
   "from-[#4ACDF5] to-[#BC4AF8]",
   "from-[#F472B6] to-[#db2777]",
@@ -116,9 +115,6 @@ function generateIdentity() {
   return `${adj} ${ani}`;
 }
 
-// ─── HTTP ROUTES ────────────────────────────────────────────────────────────
-
-// Root / health-check — fixes "Cannot GET /" on hosting platforms
 app.get("/", (req, res) => {
   res.json({
     status: "ok",
