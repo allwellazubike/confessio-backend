@@ -5,7 +5,6 @@ const isProduction = process.env.NODE_ENV === "production";
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  // Only use SSL if we are NOT running on our local machine
   ssl: isProduction ? { rejectUnauthorized: false } : false,
 });
 
