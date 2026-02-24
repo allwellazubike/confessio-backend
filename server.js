@@ -34,10 +34,8 @@ const io = new Server(server, {
   },
 });
 
-// ─── DATABASE ───────────────────────────────────────────────────────────────
 const db = require("./db");
 
-// ─── DB INIT ────────────────────────────────────────────────────────────────
 async function initDB() {
   try {
     await db.query(`
@@ -57,7 +55,6 @@ async function initDB() {
 }
 initDB();
 
-// ─── CLEANUP JOB ────────────────────────────────────────────────────────────
 // Delete boards that have had no activity for 24 hours
 setInterval(
   async () => {
@@ -140,8 +137,6 @@ app.get("/api/generate-id", (req, res) => {
   const uniqueId = Math.random().toString(36).substring(2, 9);
   res.json({ id: uniqueId });
 });
-
-// ─── SOCKET.IO ──────────────────────────────────────────────────────────────
 io.on("connection", (socket) => {
   console.log("User connected:", socket.id);
 
