@@ -123,12 +123,9 @@ app.get("/", (req, res) => {
   });
 });
 
-// Health check endpoint (useful for uptime monitors)
 app.get("/health", (req, res) => {
   res.json({ status: "ok" });
 });
-
-// Generate a unique board ID
 app.get("/api/generate-id", (req, res) => {
   const uniqueId = Math.random().toString(36).substring(2, 9);
   res.json({ id: uniqueId });
@@ -205,7 +202,6 @@ io.on("connection", (socket) => {
   });
 });
 
-// ─── START SERVER ───────────────────────────────────────────────────────────
 server.listen(PORT, () => {
   console.log(`🚀 Server running on http://localhost:${PORT}`);
   console.log(`   Environment : ${process.env.NODE_ENV || "development"}`);
