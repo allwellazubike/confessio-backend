@@ -2,6 +2,7 @@ require("dotenv").config();
 const express = require("express");
 const http = require("http");
 const cors = require("cors");
+const { rateLimit } = require("express-rate-limit");
 const { Server } = require("socket.io");
 
 const app = express();
@@ -126,7 +127,16 @@ app.get("/", (req, res) => {
 app.get("/health", (req, res) => {
   res.json({ status: "ok" });
 });
-app.get("/api/generate-id", (req, res) => {
+// Max 10 new boards per IP per hour — stops board-creation spam
+const generateIdLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "Too many boards created. Try again later." },
+});
+
+app.get("/api/generate-id", generateIdLimiter, (req, res) => {
   const uniqueId = Math.random().toString(36).substring(2, 9);
   res.json({ id: uniqueId });
 });
@@ -151,9 +161,25 @@ io.on("connection", (socket) => {
     }
   });
 
+  // Per-socket rate limit — tracks the last emit time on socket object
+  socket._lastConfession = 0;
+
   socket.on("new_confession", async ({ boardId, text }) => {
+    // Throttle: max 1 confession per socket per 3 seconds
+    const now = Date.now();
+    if (now - socket._lastConfession < 3000) return; // silently drop
+    socket._lastConfession = now;
+
     if (!text || !text.trim()) return;
     if (!boardId) return;
+
+    // Max 500 characters per confession
+    if (text.trim().length > 500) {
+      socket.emit("error", {
+        message: "Confession too long. Max 500 characters.",
+      });
+      return;
+    }
 
     const identity = generateIdentity();
     const gradient =
